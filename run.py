@@ -84,7 +84,7 @@ def park_amenity():
             # Clean the text
             reviews_text = ' '.join(reviews_text)
             # Vectorize the text
-            X_vect = np.zeros([1,w2v_model.trainables.layer1_size])
+            X_vect = np.zeros([1,w2v_model['test'].shape[0]])
             for word in reviews_text.split():
                 X_vect += w2v_model[word]
             X_vect = X_vect / len(reviews_text.split())
