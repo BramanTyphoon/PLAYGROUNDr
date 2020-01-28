@@ -7,9 +7,9 @@ Created on Wed Jan 22 17:22:45 2020
 """
 
 from flask import render_template, request, Flask
-#from flask_bootstrap import Bootstrap
 from GooglePlaces import GooglePlaces
-from util import text_prepare, build_fasttext_model
+from util import text_prepare, bag_of_words_vectorize
+from flask_bootstrap import Bootstrap
 import numpy as np
 import pickle
 import json
@@ -27,17 +27,19 @@ init_zoom = 12
 num_amenities = 7 # Number of amenities predicted by the classifier
 min_num_reviews = 4 # Minimimum number of reviews to accept before running model
 amenity_names = ['Playground','Splash pad','Pool','Ice rink','Restroom','Sports field', 'Dog park']
-model_file_name = "data/NBCmodel.mod" # Filename containing the classification model
+model_file_name = "data/classifier.mod" # Filename containing the classification model
 review_database_name = "data/park_reviews_database_20200121.json" # Filename of database containing all park reviews
+vectorizer_file_name = "data/BoWmodel.mod"
 
 with open(model_file_name,'rb') as fp:
     clf = pickle.load(fp)
     
-w2v_model = build_fasttext_model(review_database_name)
+with open(vectorizer_file_name,'rb') as fp:
+    bow_model = pickle.load(fp)
 
 # Start the app instance
 app = Flask(__name__, template_folder="templates")
-#Bootstrap(app)
+Bootstrap(app)
 
 @app.route('/')
 def index():
@@ -84,9 +86,7 @@ def park_amenity():
             # Clean the text
             reviews_text = ' '.join(reviews_text)
             # Vectorize the text
-            X_vect = np.zeros([1,w2v_model['test'].shape[0]])
-            for word in reviews_text.split():
-                X_vect += w2v_model[word]
+            X_vect = bag_of_words_vectorize(reviews_text,bow_model)
             X_vect = X_vect / len(reviews_text.split())
             # Run the classification model
             y_pred = clf.predict(X_vect[0,:].reshape(1,-1))

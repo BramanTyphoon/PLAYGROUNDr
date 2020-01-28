@@ -58,6 +58,7 @@ class GooglePlaces(object):
         endpoint_url = "https://maps.googleapis.com/maps/api/place/details/json"
         params = {
                 'place_id' : place_id,
+                'language' : 'en',
                 'fields' : ",".join(['review','formatted_address','name','place_id','type']),
                 'key' : self.apiKey
                 }

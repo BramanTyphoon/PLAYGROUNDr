@@ -15,6 +15,7 @@ Created on Fri Jan 24 14:43:52 2020
 from gensim.models import FastText
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
+import numpy as np
 import pandas as pd
 import re
 
@@ -37,6 +38,13 @@ def text_prepare(text):
 #    text = ' '.join([x for x in text.split() if x not in STOPWORDS])# delete stopwords from text and don't lemmatize
     text = ' '.join([lemmatizer.lemmatize(x) for x in text.split() if x not in STOPWORDS])# delete stopwords from text and lemmatize
     return text
+
+def bag_of_words_vectorize(words,word2index):
+    vect = np.zeros([1,len(word2index.keys())])
+    for word in words.split():
+        if word in word2index.keys():
+            vect[0,word2index[word]] += 1
+    return vect
 
 def build_fasttext_model(full_database_file):
     review_database = pd.read_json(full_database_file,orient='records',lines='True')
