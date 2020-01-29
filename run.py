@@ -32,6 +32,11 @@ model_file_name = "data/classifier.mod" # Filename containing the classification
 review_database_name = "data/park_reviews_database_20200121.json" # Filename of database containing all park reviews
 vectorizer_file_name = "data/BoWmodel.mod"
 
+## Some additional parsing/kluges help the app perform better
+# If these words appear in the location name, don't throw out if Google fails
+# to label as park
+place_types = ['playground','pool', 'dog park', 'recreation centre', 'community centre','recreation center', 'community center', 'sports field']
+
 with open(model_file_name,'rb') as fp:
     clf = pickle.load(fp)
     
@@ -47,55 +52,6 @@ def index():
     return render_template('mainmap.html', origin=json.dumps(init_origin), zoom=init_zoom,apikey = API_KEY,name = "Location Name", status = "Click on a location", address = "Address", amenities = zip(amenity_names,[False]*num_amenities))
 
 # This route gets called when a user has clicked on a location with a placeid
-@app.route('/park_amenities')
-def park_amenity():
-    # Extract Google Places details for the placeid
-    placeid = request.args.get('placeid')
-    inlon = float(request.args.get('inlon'))
-    inlat = float(request.args.get('inlat'))
-    zoom = float(request.args.get('zoom'))
-    
-    reviews = gp.place_reviews(placeid)
-    reviews = reviews['result']
-    
-    # If the place is not a park, don't run the model
-    if "park" not in reviews['types']:
-        out_name = reviews['name']
-        out_text = "This site is not a park"
-        out_amenities = [0]*num_amenities
-        out_address = reviews['formatted_address']
-    
-    # If there are no reviews, don't run the model    
-    elif 'reviews' not in reviews.keys():
-        out_name = reviews['name']
-        out_text = "No reviews available for this site"
-        out_amenities = [0]*num_amenities
-        out_address = reviews['formatted_address']
-    else:
-        # If there are too few reviews, don't run the model
-        reviews_text = [text_prepare(rev) for rev in [revi['text'] for revi in reviews['reviews']] if text_prepare(rev)]
-        if len(reviews_text) < min_num_reviews:
-            out_name = reviews['name']
-            out_text = "Insufficient (<4) reviews for this site."
-            out_amenities = [0]*num_amenities
-            out_address = reviews['formatted_address']
-        else:
-            out_name = reviews['name']
-            out_text = ""
-            out_address = reviews['formatted_address']
-            # Run the model on the reviews text and return the results
-            # Clean the text
-            reviews_text = ' '.join(reviews_text)
-            # Vectorize the text
-            X_vect = bag_of_words_vectorize(reviews_text,bow_model)
-            X_vect = X_vect / len(reviews_text.split())
-            # Run the classification model
-            y_pred = clf.predict(X_vect[0,:].reshape(1,-1))
-            out_amenities = [y_pred[0,ii] for ii in range(y_pred.shape[1])]
-    
-    return render_template('mainmap.html',origin=json.dumps({"lat": inlat,"lng": inlon}), zoom=float(zoom),apikey=API_KEY, name = out_name, status = out_text, address = out_address, amenities = zip(amenity_names,[x == 1 for x in out_amenities]))
-
-# This route gets called when a user has clicked on a location with a placeid
 @app.route('/singlepark', methods=['POST'])
 def single_park_amenities():
     placeid = request.form['placeid']
@@ -105,7 +61,7 @@ def single_park_amenities():
     reviews = reviews['result']
     
     # If the place is not a park, don't run the model
-    if "park" not in reviews['types']:
+    if "park" not in reviews['types'] and not [place_type not in reviews["name"].lower() for place_type in place_types].any():
         out_name = reviews['name']
         out_text = "This site is not a park"
         out_scores = [0]*num_amenities
@@ -138,6 +94,11 @@ def single_park_amenities():
             # Run the classification model
             y_pred = clf.predict(X_vect[0,:].reshape(1,-1))
             out_scores = [str(y_pred[0,ii]) for ii in range(y_pred.shape[1])]
+            # If the amenity name appears in the location name, it should
+            # probably be at that location
+            for ii in range(len(out_scores)):
+                if amenity_names[ii].lower() in out_name.lower():
+                    out_scores[ii] = str(1)
             
     # Return JSON output
     return jsonify({"results" : [{
