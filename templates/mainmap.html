@@ -128,11 +128,64 @@
                       ulist.appendChild(litem)
                       }
                   $('#column').append(ulist)
-          });
-          //url = window.location
-          //window.location = "/park_amenities?placeid="+event.placeId+"&inlat="+encodeURIComponent(this.origin.lat.toString(10))+"&inlon="+encodeURIComponent(this.origin.lng.toString(10)) +"&zoom="+this.zoom.toString(10)
-          this.getPlaceInformation(event.placeId);
+            });
+            //url = window.location
+            //window.location = "/park_amenities?placeid="+event.placeId+"&inlat="+encodeURIComponent(this.origin.lat.toString(10))+"&inlon="+encodeURIComponent(this.origin.lng.toString(10)) +"&zoom="+this.zoom.toString(10)
+            this.getPlaceInformation(event.placeId);
           
+        } else {
+
+          // Calling e.stop() on the event prevents the default info window from
+          // showing.
+          // If you call stop here when there is no placeId you will prevent some
+          // other map click event handlers from receiving the event.
+          //event.stop();
+          //Send the event id to the server, which will use it to look up
+          //location reviews and run them through the model. The results are
+          //then parsed into an HTML structure allowing for multiple results
+          //in a list.
+          //Use AJAX to query the server
+          $.post('/multipark', {
+              lat : event.latLng.lat,
+              lon : event.latLng.lng
+              }).done(function(response) {
+                  //Take the server response and parse it
+                  $('#column').empty()
+                  //Build a list of the locations passed in the response
+                  ulist = document.createElement("OL");
+                  for (i=0; i < response['results'].length; i++) {
+                      console.log('Processing result ' + i)
+                      //For each location, list the name, address, and amenities
+                      litem = document.createElement("LI");
+                      col = document.createElement("DIV");
+                      locTitle = document.createElement("H2");
+                      locTitle.innerHTML = response['results'][i]['name'];
+                      locAddress = document.createElement("P");
+                      locAddress.innerHTML = response['results'][i]['address'];
+                      locStatus = document.createElement("P");
+                      locStatus.innerHTML = response['results'][i]['text'];
+                      locAmenity = document.createElement("P");
+                      amenities = response['results'][i]['amenities'];
+                      scores = response['results'][i]['scores'];
+                      //Bold amenities that are present at the location
+                      for (j=0; j < amenities.length; j++) {
+                          if (scores[j]=="1") {
+                              amenity = document.createElement("B");
+                              amenity.innerHTML = " ".concat(amenities[j]," |");
+                          } else {
+                              amenity = document.createTextNode(" ".concat(amenities[j]," |"));
+                          }
+                          locAmenity.appendChild(amenity);
+                      }
+                      col.appendChild(locTitle);
+                      col.appendChild(locAddress);
+                      col.appendChild(locStatus);
+                      col.appendChild(locAmenity);
+                      litem.appendChild(col);
+                      ulist.appendChild(litem);
+                      }
+                  $('#column').append(ulist);
+            });
         }
       };
 

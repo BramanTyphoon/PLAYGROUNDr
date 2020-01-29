@@ -15,6 +15,7 @@ Created on Fri Jan 24 14:43:52 2020
 from gensim.models import FastText
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
+import pickle
 import numpy as np
 import pandas as pd
 import re
@@ -30,7 +31,82 @@ vector_size = 128
 window_size = 5
 train_epochs = 5
 
+# Define model parameters and load in the model files
+num_amenities = 7 # Number of amenities predicted by the classifier
+min_num_reviews = 4 # Minimimum number of reviews to accept before running model
+amenity_names = ['Playground','Splash pad','Pool','Ice rink','Restroom','Sports field', 'Dog park']
+model_file_name = "data/classifier.mod" # Filename containing the classification model
+review_database_name = "data/park_reviews_database_20200121.json" # Filename of database containing all park reviews
+vectorizer_file_name = "data/BoWmodel.mod"
+
+## Some additional parsing/kluges help the app perform better
+# If these words appear in the location name, don't throw out if Google fails
+# to label as park
+place_types = ['playground','pool', 'dog park', 'recreation centre', 'community centre','recreation center', 'community center', 'sports field']
+
+with open(model_file_name,'rb') as fp:
+    clf = pickle.load(fp)
+    
+with open(vectorizer_file_name,'rb') as fp:
+    bow_model = pickle.load(fp)
+
+
 # Method for preparing text for modeling
+def process_review(review):
+    if "park" not in review['types'] and not [place_type not in review["name"].lower() for place_type in place_types].any():
+        out_name = review['name']
+        out_text = "This site is not a park"
+        out_scores = [0]*num_amenities
+        out_address = review['formatted_address']
+        out_location = review['geometry']['location']
+    
+    # If there are no reviews, don't run the model    
+    elif 'reviews' not in review.keys():
+        out_name = review['name']
+        out_text = "No reviews available for this site"
+        out_scores = [0]*num_amenities
+        out_address = review['formatted_address']
+        out_location = review['geometry']['location']
+    else:
+        # If there are too few reviews, don't run the model
+        reviews_text = [text_prepare(rev) for rev in [revi['text'] for revi in review['reviews']] if text_prepare(rev)]
+        if len(reviews_text) < min_num_reviews:
+            out_name = review['name']
+            out_text = "Insufficient (<4) reviews for this site."
+            out_scores = [0]*num_amenities
+            out_address = review['formatted_address']
+            out_location = review['geometry']['location']
+        else:
+            out_name = review['name']
+            out_text = ""
+            out_address = review['formatted_address']
+            out_location = review['geometry']['location']
+            # Run the model on the reviews text and return the results
+            # Clean the text
+            reviews_text = ' '.join(reviews_text)
+            # Vectorize the text
+            X_vect = bag_of_words_vectorize(reviews_text,bow_model)
+            X_vect = X_vect / len(reviews_text.split())
+            # Run the classification model
+            y_pred = clf.predict(X_vect[0,:].reshape(1,-1))
+            out_scores = [str(y_pred[0,ii]) for ii in range(y_pred.shape[1])]
+            # If the amenity name appears in the location name, it should
+            # probably be at that location
+            for ii in range(len(out_scores)):
+                if amenity_names[ii].lower() in out_name.lower():
+                    out_scores[ii] = str(1)
+                    
+    out_dict = {
+        'name' : out_name,
+        'text' : out_text,
+        'address' : out_address,
+        'scores' : out_scores,
+        'amenities' : amenity_names,
+        'location' : out_location,
+        'distance' : str(0)
+                }
+    return out_dict
+
 def text_prepare(text):
     text = text.lower()
     text = re.sub(REPLACE_BY_SPACE_RE,' ',text)# replace REPLACE_BY_SPACE_RE symbols by space in text
