@@ -36,7 +36,23 @@
   <body>
     <div id="map"></div>
     <div id="column">
-      <h1 id="placestatus">{{status}}</h1>
+      <div id="options"> 
+        <h2> Search options: </h2>
+        <p id="top-amenities">
+          <input type="checkbox" name="amenity" value="Playground"> Playground
+          <input type="checkbox" name="amenity" value="Splash pad"> Splash pad
+          <input type="checkbox" name="amenity" value="Pool"> Pool
+          <input type="checkbox" name="amenity" value="Ice rink"> Ice rink
+        </p>
+        <p id="bottom-amenities">
+          <input type="checkbox" name="amenity" value="Restroom"> Restroom
+          <input type="checkbox" name="amenity" value="Sports field"> Sports field
+          <input type="checkbox" name="amenity" value="Dog park"> Dog park
+        </p>
+      </div>
+      <div id="results">
+        <h2 id="placestatus">{{status}}</h2>
+      </div>
     </div>
     <div id="infowindow-content">
       <img id="place-icon" src="" height="16" width="16">
@@ -99,7 +115,7 @@
               placeid : event.placeId
               }).done(function(response) {
                   //Take the server response and parse it
-                  $('#column').empty()
+                  $('#results').empty()
                   //Build a list of the locations passed in the response
                   ulist = document.createElement("OL");
                   for (i=0; i < response['results'].length; i++) {
@@ -132,7 +148,7 @@
                       litem.appendChild(col)
                       ulist.appendChild(litem)
                       }
-                  $('#column').append(ulist)
+                  $('#results').append(ulist)
             });
             //url = window.location
             //window.location = "/park_amenities?placeid="+event.placeId+"&inlat="+encodeURIComponent(this.origin.lat.toString(10))+"&inlon="+encodeURIComponent(this.origin.lng.toString(10)) +"&zoom="+this.zoom.toString(10)
@@ -150,25 +166,41 @@
           //then parsed into an HTML structure allowing for multiple results
           //in a list.
           //Use AJAX to query the server
+          
+          //Retrieve search options
+          searchOptions = Array()
+          amens = document.getElementById("top-amenities").children
+          for (i=0; i < amens.length; i++){
+            searchOptions.push(amens[i].checked)
+          }
+          amens = document.getElementById("bottom-amenities").children
+          for (i=0; i < amens.length; i++){
+            searchOptions.push(amens[i].checked)
+          }
+          
+          //Remove markers from the map
           for (i=0; i < this.markers.length; i++) {
               this.markers[i].setMap(null);
           }
           this.markers.length = 0;
+          //Add a marker to the search location
           this.markers.push(new google.maps.Marker({position:event.latLng,map:this.map,label:"0"}));
           $.ajax({
               url: '/multipark', 
               type: "POST",
               data: {
-              lat : event.latLng.lat,
-              lon : event.latLng.lng},
-              custom: this
+                  lat : event.latLng.lat,
+                  lon : event.latLng.lng,
+                  search : JSON.stringify(searchOptions)},
+              custom : this
               }).done(function(response) {
                   //Take the server response and parse it
-                  $('#column').empty()
+                  $('#results').empty()
                   //Build a list of the locations passed in the response
                   ulist = document.createElement("OL");
                   for (i=0; i < response['results'].length; i++) {
                       console.log('Processing result ' + i);
+                      //Add a marker for each location found
                       addMarkers(this.custom,response['results'][i]['location'], i);
                       //For each location, list the name, address, and amenities
                       litem = document.createElement("LI");
@@ -199,7 +231,7 @@
                       litem.appendChild(col);
                       ulist.appendChild(litem);
                       }
-                  $('#column').append(ulist);
+                  $('#results').append(ulist);
             });
         }
       };

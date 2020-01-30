@@ -51,7 +51,9 @@ def single_park_amenities():
 def multi_park_amenities():
     lat = float(request.form['lat'])
     lon = float(request.form['lon'])
-    print([lat,lon])
+    options = np.array([1 if x else 0 for x in json.loads(request.form['search'])])
+
+    # Find reviews for all parks within radius of the search location
     reviews = gp.retrieve_reviews_multi([search_query], [lat,lon])
     
     # Sometimes Google has duplicate places. Remove duplicates and combine
@@ -72,6 +74,7 @@ def multi_park_amenities():
     out_dicts = []
     out_dists = []
     out_amens = []
+    out_amens_diff = []
     # For each review, extract details and calculate distance from the search
     # location
     for review in reviews_no_duplicates:
@@ -79,14 +82,27 @@ def multi_park_amenities():
         dist = geodesic((lat,lon),(details['location']['lat'],details['location']['lng'])).kilometers
         out_dists.append(dist)
         out_amens.append(sum([float(x) for x in details['scores']]))
+        out_amens_diff.append(sum([x-float(y) if x == 1 else 0 for x,y in zip(options,details['scores'])]))
         details['distance'] = str(dist) + ' km'
         out_dicts.append(details)
-    # Sort the output locations based on distance to the search location and
-    # number of amenities
+        
+    # Sort the output locations based on user input amenity requests or
+    # distance/number of amenities. We only care about distance if it exceeds
+    # some maximum distance our users are willing to walk
     out_dists2 = np.array(out_dists)
     out_dists2[out_dists2<max_walk] = 0
-    sorter = np.array(list(zip(list(range(len(out_dists2))),-np.array(out_amens),out_dists2)),dtype=[('index','i4'),('amens','f4'),('dists','f4')])
-    sorter = np.sort(sorter,order=['dists','amens'])
+    # If the user doesn't pass us any options or selected all amenities, pass
+    # them the results sorted by number of amenities for distance within 
+    # maximum walking distance, and by distance otherwise
+    if sum(options) == 0 or sum(options)==len(options):
+        sorter = np.array(list(zip(list(range(len(out_dists2))),-np.array(out_amens),out_dists2)),dtype=[('index','i4'),('amens','f4'),('dists','f4')])
+        sorter = np.sort(sorter,order=['dists','amens'])
+    else:
+        # If the user supplies desired amenities, sort first by number of 
+        # amenities that match the desired list, and then by distance and total 
+        # amenities
+        sorter = np.array(list(zip(list(range(len(out_dists2))),-np.array(out_amens),out_dists2,out_amens_diff)),dtype=[('index','i4'),('amens','f4'),('dists','f4'),('diff','f4')])
+        sorter = np.sort(sorter,order=['diff','dists','amens'])
     
     out_dicts = np.array(out_dicts)
     out_dicts = out_dicts[sorter['index']]
