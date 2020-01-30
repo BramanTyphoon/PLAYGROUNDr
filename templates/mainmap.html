@@ -46,6 +46,7 @@
       function initMap() {
         var origin = {{origin|safe}};//{lat: 43.65, lng: -79.38};
         var zoom = {{zoom|safe}};
+        var markers = Array();
 
         var map = new google.maps.Map(document.getElementById('map'), {
           zoom: zoom,
@@ -61,6 +62,7 @@
         this.origin = origin;
         this.zoom = zoom;
         this.map = map;
+        this.markers = [];
         //this.directionsService = new google.maps.DirectionsService;
         //this.directionsRenderer = new google.maps.DirectionsRenderer;
         //this.directionsRenderer.setMap(map);
@@ -73,7 +75,10 @@
         this.map.addListener('click', this.handleClick.bind(this));
       };
       
-
+      addMarkers = function(containers,location,i) {
+          containers.markers.push(new google.maps.Marker({position: location, label: (i+1).toString(10), map: containers.map}));
+      };
+      
       ClickEventHandler.prototype.handleClick = function(event) {
         console.log('You clicked on: ' + event.latLng);
         // If the event has a placeId, use it.
@@ -145,16 +150,26 @@
           //then parsed into an HTML structure allowing for multiple results
           //in a list.
           //Use AJAX to query the server
-          $.post('/multipark', {
+          for (i=0; i < this.markers.length; i++) {
+              this.markers[i].setMap(null);
+          }
+          this.markers.length = 0;
+          this.markers.push(new google.maps.Marker({position:event.latLng,map:this.map,label:"0"}));
+          $.ajax({
+              url: '/multipark', 
+              type: "POST",
+              data: {
               lat : event.latLng.lat,
-              lon : event.latLng.lng
+              lon : event.latLng.lng},
+              custom: this
               }).done(function(response) {
                   //Take the server response and parse it
                   $('#column').empty()
                   //Build a list of the locations passed in the response
                   ulist = document.createElement("OL");
                   for (i=0; i < response['results'].length; i++) {
-                      console.log('Processing result ' + i)
+                      console.log('Processing result ' + i);
+                      addMarkers(this.custom,response['results'][i]['location'], i);
                       //For each location, list the name, address, and amenities
                       litem = document.createElement("LI");
                       col = document.createElement("DIV");

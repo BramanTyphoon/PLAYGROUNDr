@@ -53,7 +53,7 @@ with open(vectorizer_file_name,'rb') as fp:
 
 # Method for preparing text for modeling
 def process_review(review):
-    if "park" not in review['types'] and not [place_type not in review["name"].lower() for place_type in place_types].any():
+    if "park" not in review['types'] and not any([place_type not in review["name"].lower() for place_type in place_types]):
         out_name = review['name']
         out_text = "This site is not a park"
         out_scores = [0]*num_amenities
