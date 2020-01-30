@@ -27,16 +27,16 @@ search_query = 'park' #Type of Google Place to search for
 max_results = 5#Maximum number of place results to display
 max_walk = 1 #Maximum walking distance, in km, from user survey
 
-# Start the app instance
-app = Flask(__name__, template_folder="templates")
-Bootstrap(app)
+# Start the application instance
+application = Flask(__name__, template_folder="templates")
+Bootstrap(application)
 
-@app.route('/')
+@application.route('/')
 def index():
     return render_template('mainmap.html', origin=json.dumps(init_origin), zoom=init_zoom,apikey = API_KEY,name = "Location Name", status = "Click on a location", address = "Address")
 
 # This route gets called when a user has clicked on a location with a placeid
-@app.route('/singlepark', methods=['POST'])
+@application.route('/singlepark', methods=['POST'])
 def single_park_amenities():
     placeid = request.form['placeid']
     
@@ -47,7 +47,7 @@ def single_park_amenities():
     return(jsonify(out_dict))
     
     
-@app.route('/multipark', methods=['POST'])
+@application.route('/multipark', methods=['POST'])
 def multi_park_amenities():
     lat = float(request.form['lat'])
     lon = float(request.form['lon'])
@@ -110,4 +110,4 @@ def multi_park_amenities():
     return(jsonify({"results" : list(out_dicts[0:max_results])}))
         
 if __name__ == "__main__":
-    app.run(host='0.0.0.0',debug=True,port=5000)
+    application.run(host='0.0.0.0',debug=True,port=5000)
