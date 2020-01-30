@@ -15,6 +15,10 @@
       #column {
         float: right;
         width: 40%;
+        height: 100%;
+      }
+      #results {
+        height: 75%;
       }
       /* Optional: Makes the sample page fill the window. */
       html, body {
@@ -50,7 +54,7 @@
           <input type="checkbox" name="amenity" value="Dog park"> Dog park
         </p>
       </div>
-      <div id="results">
+      <div id="results" style="overflow-x:auto; height:75%;">
         <h2 id="placestatus">{{status}}</h2>
       </div>
     </div>
