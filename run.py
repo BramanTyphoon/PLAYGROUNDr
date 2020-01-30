@@ -15,8 +15,7 @@ import numpy as np
 import json
 
 # Variables used within the other methods
-API_KEY = 'AIzaSyAUzvGNHIl8i3gY_GC54lJd-NJLq6LbNNA' # Key required for Google API use
-#API_KEY = input("Provide a Google Places/Maps API KEY:")
+API_KEY = input("Provide a Google Places/Maps API KEY:")
 search_radius = 5000 #Search radius for location search, in meters
 gp = GooglePlaces(API_KEY, search_radius) # Object that interfaces with Google API to pull review data
 
