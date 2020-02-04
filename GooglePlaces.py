@@ -46,6 +46,18 @@ class GooglePlaces(object):
         results = json.loads(res.content)
         return results
     
+    def place_coordinate_by_textquery(self, query):
+        endpoint_url = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json"
+        params = {
+                'input' : query,
+                'inputtype' : 'textquery',
+                'fields' : 'geometry',
+                'key' : self.apiKey
+                }
+        res = requests.get(endpoint_url,params = params)
+        results = json.loads(res.content)
+        return results
+    
     def places_by_coordinate(self, typ, location, radius=()):
         if not radius:
             radius = self.search_radius

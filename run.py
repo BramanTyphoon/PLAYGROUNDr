@@ -31,8 +31,17 @@ application = Flask(__name__, template_folder="templates")
 Bootstrap(application)
 
 @application.route('/')
+@application.route('/index',methods=['POST'])
 def index():
-    return render_template('mainmap.html', origin=json.dumps(init_origin), zoom=init_zoom,apikey = API_KEY,name = "Location Name", status = "Click on a location", address = "Address")
+    if request.form:
+        candidate = gp.place_coordinate_by_textquery(request.form['location_field'])
+        if candidate['candidates']:
+            origin = candidate['candidates'][0]['geometry']['location']
+        else:
+            origin = init_origin
+    else:
+        origin = init_origin
+    return render_template('mainmap.html', origin=json.dumps(origin), zoom=init_zoom,apikey = API_KEY,name = "Location Name", status = 'Directions: Click on a park to get amenities for that park, click anywhere else to search for nearby parks with the chosen amenities.', address = "Address")
 
 # This route gets called when a user has clicked on a location with a placeid
 @application.route('/singlepark', methods=['POST'])
@@ -109,4 +118,4 @@ def multi_park_amenities():
     return(jsonify({"results" : list(out_dicts[0:max_results])}))
         
 if __name__ == "__main__":
-    application.run(host='0.0.0.0',debug=True,port=5000)
+    application.run(host='0.0.0.0',debug=True,port=5001)

@@ -40,7 +40,14 @@
   <body>
     <div id="map"></div>
     <div id="column">
+      <div id="title">
+        <h1> PLAYGROUNDr </h1>
+      </div>
       <div id="options"> 
+        <form action="/index" name="location_change" id="location_change" method="post">
+          <input type="text" name="location_field" id="location_field" placeholder="Enter new location"/>
+          <input type="submit" id="location_btn" value="Change location"/>
+        </form>
         <h2> Search options: </h2>
         <p id="top-amenities">
           <input type="checkbox" name="amenity" value="Playground"> Playground
@@ -55,7 +62,7 @@
         </p>
       </div>
       <div id="results" style="overflow-x:auto; height:75%;">
-        <h2 id="placestatus">{{status}}</h2>
+        <p id="placestatus">{{status}}</p>
       </div>
     </div>
     <div id="infowindow-content">
@@ -63,6 +70,8 @@
       <span id="place-name"  class="title"></span><br>
     </div>
     <script>
+    
+      //This function initializes a new embedded Google Map   
       function initMap() {
         var origin = {{origin|safe}};//{lat: 43.65, lng: -79.38};
         var zoom = {{zoom|safe}};
@@ -78,14 +87,11 @@
       /**
        * @constructor
        */
+      // Create a new event handler to interpret user clicks on the map and set
+      // content of an info window
       var ClickEventHandler = function(map, origin, zoom) {
-        this.origin = origin;
-        this.zoom = zoom;
         this.map = map;
         this.markers = [];
-        //this.directionsService = new google.maps.DirectionsService;
-        //this.directionsRenderer = new google.maps.DirectionsRenderer;
-        //this.directionsRenderer.setMap(map);
         this.placesService = new google.maps.places.PlacesService(map);
         this.infowindow = new google.maps.InfoWindow;
         this.infowindowContent = document.getElementById('infowindow-content');
@@ -99,8 +105,11 @@
           containers.markers.push(new google.maps.Marker({position: location, label: (i+1).toString(10), map: containers.map}));
       };
       
+      //Handles user clicks on the map and uses them to drive app functionality
       ClickEventHandler.prototype.handleClick = function(event) {
         console.log('You clicked on: ' + event.latLng);
+        console.log('You clicked on map center: ' + this.map.center)
+        this.map.setCenter(event.latLng);
         // If the event has a placeId, use it.
         if (event.placeId) {
           console.log('You clicked on place:' + event.placeId);
@@ -154,8 +163,7 @@
                       }
                   $('#results').append(ulist)
             });
-            //url = window.location
-            //window.location = "/park_amenities?placeid="+event.placeId+"&inlat="+encodeURIComponent(this.origin.lat.toString(10))+"&inlon="+encodeURIComponent(this.origin.lng.toString(10)) +"&zoom="+this.zoom.toString(10)
+            
             this.getPlaceInformation(event.placeId);
           
         } else {
@@ -239,24 +247,8 @@
             });
         }
       };
-
-      /*
-      ClickEventHandler.prototype.calculateAndDisplayRoute = function(placeId) {
-        var me = this;
-        this.directionsService.route({
-          origin: this.origin,
-          destination: {placeId: placeId},
-          travelMode: 'WALKING'
-        }, function(response, status) {
-          if (status === 'OK') {
-            me.directionsRenderer.setDirections(response);
-          } else {
-            window.alert('Directions request failed due to ' + status);
-          }
-        });
-      };
-      */
-
+      
+      //Generate an info window on clicked Google Places
       ClickEventHandler.prototype.getPlaceInformation = function(placeId) {
         var me = this;
         this.placesService.getDetails({placeId: placeId}, function(place, status) {
