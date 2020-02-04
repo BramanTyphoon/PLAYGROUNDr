@@ -12,11 +12,13 @@
         height: 100%;
         width: 60%; 
       }
+      /* Define settings for the sidebar containing app results */
       #column {
         float: right;
-        width: 40%;
+        width: 39%;
         height: 100%;
       }
+      /* Settings for results within the sidebar */
       #results {
         height: 75%;
       }
@@ -61,7 +63,10 @@
           <input type="checkbox" name="amenity" value="Dog park"> Dog park
         </p>
       </div>
-      <div id="results" style="overflow-x:auto; height:75%;">
+      <div id="legend">
+          <span>Amenities in <b>bold</b> are present based on reviews. </span>
+      </div>
+      <div id="results" style="overflow-x:auto; height:55%;">
         <p id="placestatus">{{status}}</p>
       </div>
     </div>
