@@ -135,12 +135,14 @@
                       //For each location, list the name, address, and amenities
                       litem = document.createElement("LI");
                       col = document.createElement("DIV");
-                      locTitle = document.createElement("H2");
+                      locTitle = document.createElement("STRONG");
                       locTitle.innerHTML = response['results'][i]['name'];
                       locAddress = document.createElement("P");
                       locAddress.innerHTML = response['results'][i]['address'];
                       locStatus = document.createElement("P");
-                      locStatus.innerHTML = response['results'][i]['text'];
+                      locStatusInner = document.createElement("I");
+                      locStatusInner.innerHTML = response['results'][i]['text'];
+                      locStatus.appendChild(locStatusInner);
                       locAmenity = document.createElement("P");
                       amenities = response['results'][i]['amenities'];
                       scores = response['results'][i]['scores'];
@@ -150,7 +152,8 @@
                               amenity = document.createElement("B");
                               amenity.innerHTML = " ".concat(amenities[j]," |");
                           } else {
-                              amenity = document.createTextNode(" ".concat(amenities[j]," |"));
+                              amenity = document.createElement("SPAN");
+                              amenity.innerHTML = " ".concat(amenities[j]," |");
                           }
                           locAmenity.appendChild(amenity);
                       }
@@ -217,12 +220,14 @@
                       //For each location, list the name, address, and amenities
                       litem = document.createElement("LI");
                       col = document.createElement("DIV");
-                      locTitle = document.createElement("H2");
+                      locTitle = document.createElement("STRONG");
                       locTitle.innerHTML = response['results'][i]['name'];
                       locAddress = document.createElement("P");
                       locAddress.innerHTML = response['results'][i]['address'];
                       locStatus = document.createElement("P");
-                      locStatus.innerHTML = response['results'][i]['text'];
+                      locStatusInner = document.createElement("I");
+                      locStatusInner.innerHTML = response['results'][i]['text'];
+                      locStatus.appendChild(locStatusInner);
                       locAmenity = document.createElement("P");
                       amenities = response['results'][i]['amenities'];
                       scores = response['results'][i]['scores'];
@@ -232,7 +237,8 @@
                               amenity = document.createElement("B");
                               amenity.innerHTML = " ".concat(amenities[j]," |");
                           } else {
-                              amenity = document.createTextNode(" ".concat(amenities[j]," |"));
+                              amenity = document.createElement("SPAN");
+                              amenity.innerHTML = " ".concat(amenities[j]," |");
                           }
                           locAmenity.appendChild(amenity);
                       }

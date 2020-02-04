@@ -42,7 +42,7 @@ vectorizer_file_name = "data/BoWmodel.mod"
 ## Some additional parsing/kluges help the app perform better
 # If these words appear in the location name, don't throw out if Google fails
 # to label as park
-place_types = ['playground','pool', 'dog park', 'recreation centre', 'community centre','recreation center', 'community center', 'sports field']
+place_types = ['playground','pool', 'dog park', 'dog run', 'rink', 'recreation centre', 'community centre','recreation center', 'community center', 'sports field']
 
 with open(model_file_name,'rb') as fp:
     clf = pickle.load(fp)
@@ -53,34 +53,29 @@ with open(vectorizer_file_name,'rb') as fp:
 
 # Method for preparing text for modeling
 def process_review(review):
-    if "park" not in review['types'] and not any([place_type not in review["name"].lower() for place_type in place_types]):
-        out_name = review['name']
-        out_text = "This site is not a park"
-        out_scores = [0]*num_amenities
-        out_address = review['formatted_address']
-        out_location = review['geometry']['location']
+    
+    # Set default outputs
+    out_name = review['name']
+    out_text = ""
+    out_scores = [0]*num_amenities
+    out_address = review['formatted_address']
+    out_location = review['geometry']['location']
+    
+    if "park" not in review['types'] and not any([place_type in review["name"].lower() for place_type in place_types]):
+        out_text = "This site is not a park; results may be invalid."
     
     # If there are no reviews, don't run the model    
-    elif 'reviews' not in review.keys():
+    if 'reviews' not in review.keys():
         out_name = review['name']
         out_text = "No reviews available for this site"
-        out_scores = [0]*num_amenities
-        out_address = review['formatted_address']
-        out_location = review['geometry']['location']
     else:
         # If there are too few reviews, don't run the model
         reviews_text = [text_prepare(rev) for rev in [revi['text'] for revi in review['reviews']] if text_prepare(rev)]
         if len(reviews_text) < min_num_reviews:
             out_name = review['name']
             out_text = "Insufficient (<4) reviews for this site."
-            out_scores = [0]*num_amenities
-            out_address = review['formatted_address']
-            out_location = review['geometry']['location']
         else:
             out_name = review['name']
-            out_text = ""
-            out_address = review['formatted_address']
-            out_location = review['geometry']['location']
             # Run the model on the reviews text and return the results
             # Clean the text
             reviews_text = ' '.join(reviews_text)
