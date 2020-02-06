@@ -34,10 +34,9 @@ train_epochs = 5
 # Define model parameters and load in the model files
 num_amenities = 7 # Number of amenities predicted by the classifier
 min_num_reviews = 4 # Minimimum number of reviews to accept before running model
-amenity_names = ['Playground','Splash pad','Pool','Ice rink','Restroom','Sports field', 'Dog park']
+amenity_names = ['Playground','Sports field','Pool','Splash pad','Ice rink', 'Dog park']
 model_file_name = "data/classifier.mod" # Filename containing the classification model
-review_database_name = "data/park_reviews_database_20200121.json" # Filename of database containing all park reviews
-vectorizer_file_name = "data/BoWmodel.mod"
+vectorizer_file_name = "data/TFIDFmodel.mod"
 
 ## Some additional parsing/kluges help the app perform better
 # If these words appear in the location name, don't throw out if Google fails
@@ -48,7 +47,7 @@ with open(model_file_name,'rb') as fp:
     clf = pickle.load(fp)
     
 with open(vectorizer_file_name,'rb') as fp:
-    bow_model = pickle.load(fp)
+    tfidf_model = pickle.load(fp)
 
 
 # Method for preparing text for modeling
@@ -80,11 +79,11 @@ def process_review(review):
             # Clean the text
             reviews_text = ' '.join(reviews_text)
             # Vectorize the text
-            X_vect = bag_of_words_vectorize(reviews_text,bow_model)
-            X_vect = X_vect / len(reviews_text.split())
+            X_vect = tfidf_vectorize(reviews_text,tfidf_model)
             # Run the classification model
-            y_pred = clf.predict(X_vect[0,:].reshape(1,-1))
-            out_scores = [str(y_pred[0,ii]) for ii in range(y_pred.shape[1])]
+            y_pred = [clf[ii].predict(X_vect[0,:])[0] for ii in range(len(clf))]
+            print(y_pred)
+            out_scores = [str(y_pred[ii]) for ii in range(len(y_pred))]
             # If the amenity name appears in the location name, it should
             # probably be at that location
             for ii in range(len(out_scores)):
@@ -116,6 +115,9 @@ def bag_of_words_vectorize(words,word2index):
         if word in word2index.keys():
             vect[0,word2index[word]] += 1
     return vect
+
+def tfidf_vectorize(words,tfidf):
+    return tfidf.transform([words])
 
 def build_fasttext_model(full_database_file):
     review_database = pd.read_json(full_database_file,orient='records',lines='True')
