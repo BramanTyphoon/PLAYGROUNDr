@@ -82,7 +82,6 @@ def process_review(review):
             X_vect = tfidf_vectorize(reviews_text,tfidf_model)
             # Run the classification model
             y_pred = [clf[ii].predict(X_vect[0,:])[0] for ii in range(len(clf))]
-            print(y_pred)
             out_scores = [str(y_pred[ii]) for ii in range(len(y_pred))]
             # If the amenity name appears in the location name, it should
             # probably be at that location

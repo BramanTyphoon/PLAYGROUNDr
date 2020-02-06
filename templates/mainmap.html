@@ -47,15 +47,12 @@
           <input type="submit" id="location_btn" value="Change location"/>
         </form>
         <h2> Search options: </h2>
-        <p id="top-amenities">
+        <p id="option-amenities">
           <input type="checkbox" name="amenity" value="Playground"> Playground
-          <input type="checkbox" name="amenity" value="Splash pad"> Splash pad
+          <input type="checkbox" name="amenity" value="Sports field"> Sports Field
           <input type="checkbox" name="amenity" value="Pool"> Pool
+          <input type="checkbox" name="amenity" value="Splash pad"> Splash pad
           <input type="checkbox" name="amenity" value="Ice rink"> Ice rink
-        </p>
-        <p id="bottom-amenities">
-          <input type="checkbox" name="amenity" value="Restroom"> Restroom
-          <input type="checkbox" name="amenity" value="Sports field"> Sports field
           <input type="checkbox" name="amenity" value="Dog park"> Dog park
         </p>
       </div>
@@ -155,15 +152,10 @@
           
           //Retrieve search options
           searchOptions = Array()
-          amens = document.getElementById("top-amenities").children
+          amens = document.getElementById("option-amenities").children
           for (i=0; i < amens.length; i++){
             searchOptions.push(amens[i].checked)
-          }
-          amens = document.getElementById("bottom-amenities").children
-          for (i=0; i < amens.length; i++){
-            searchOptions.push(amens[i].checked)
-          }
-          
+          }          
           this.markers.length = 0;
           //Add a marker to the search location
           this.markers.push(new google.maps.Marker({position:event.latLng,map:this.map,label:"0"}));
