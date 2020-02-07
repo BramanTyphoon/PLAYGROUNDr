@@ -47,4 +47,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 * [GooglePlaces.py](GooglePlaces.py) was modeled off of [code](https://python.gotrained.com/google-places-api-extracting-location-data-reviews/) by [Majid Alizadeh](https://python.gotrained.com/author/majid-alizadeh/)
 
+# TODO
+* Add link to Google Maps directions with destination pre-filled to each of the parks in the results side-bar
+* Change Google search strategy from "park" tag to text query?
+
 
