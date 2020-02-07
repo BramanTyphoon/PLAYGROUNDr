@@ -1,4 +1,4 @@
-## PLAYGROUNDr
+# PLAYGROUNDr
 A web-app to identify park amenities from Google Reviews. This project was developed as part of the Insight Data Science Program over four weeks in 2020.
 
 ## Motivation
@@ -14,15 +14,15 @@ The web-app will then be accessible by default in any internet browser at 0.0.0.
 Running the web-app requires a viable [Google API key](https://developers.google.com/maps/documentation/javascript/get-api-key) with access to Google Places and Google Maps APIs.
 
 ## How does it work?
-# Model description
+### Model description
 Underneath the Flask application, PLAYGROUNDr applies a series of logistic regressions to Google reviews accessed through the Google Places API. There is one logistic regression trained for each amenity listed in the app's search options: Playground, Sports Field, Pool, Splash Pad, Ice Rink, and off-leash Dog Park. 
 
 The logistic regression models were trained with Google reviews sampled from over 900 parks in Toronto, Ontario, Canada, for which a comprehensive [database of amenities](https://open.toronto.ca/dataset/parks-and-recreation-facilities/) was available. The models use the 2,000 most frequent tokens in a unigram+bigram vocabulary, embedded/vectorized using term frequency inverse document frequency (TF-IDF) trained on Google reviews sampled from roughly 20,000 parks from comprehensive databases belonging to [Pennsylvania](https://newdata-dcnr.opendata.arcgis.com/datasets/pennsylvania-local-park-boundaries), [Rhode Island](https://esri-boston-office.hub.arcgis.com/datasets/0e2070ec0e844d10b291147a080b522f_0/data?geometry=-72.763%2C41.646%2C-70.504%2C42.004), and [Florida](http://geodata.myflorida.com/datasets/c5b766ec085440738425724c451701aa_0), whose amenity listings were not as comprehensive as the Toronto database.
 
-# Model training
+### Model training
 Plots of cross-validated training and test precision for the models can be found in the Jupyter notebook [PLAYGROUNDr_model_training.ipynb](PLAYGROUNDr_model_training.ipynb). Google Places API's terms of service preclude caching data acquired through the API. Therefore, the data used to train the models is not included in this repository, and the Jupyter notebook is meant to be static.
 
-# Files
+### Files
 * [wsgi.py](wsgi.py) - Drives run.py for Gunicorn HTTP server
 * [run.py](run.py) - Creates the Flask app that handles server requests from the webpage
 * [util.py](util.py) - Contains functions used by the app to apply the models to reviews
