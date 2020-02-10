@@ -158,7 +158,7 @@
           }          
           this.markers.length = 0;
           //Add a marker to the search location
-          this.markers.push(new google.maps.Marker({position:event.latLng,map:this.map,label:"0"}));
+          this.markers.push(new google.maps.Marker({position:event.latLng,map:this.map,label:""}));
           $.ajax({
               url: '/multipark', 
               type: "POST",
