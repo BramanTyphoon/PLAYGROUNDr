@@ -222,7 +222,8 @@
                               amenity = document.createElement("B");
                               amenity.innerHTML = " ".concat(amenities[j]," |");
                           } else {
-                              amenity = document.createElement("SPAN");
+                              amenity = document.createElement("font");
+                              amenity.color = "silver";
                               amenity.innerHTML = " ".concat(amenities[j]," |");
                           }
                           locAmenity.appendChild(amenity);

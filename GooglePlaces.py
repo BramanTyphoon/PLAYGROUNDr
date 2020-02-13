@@ -122,7 +122,7 @@ class GooglePlaces(object):
         return results
     
     def retrieve_reviews(self, query, location=[]):
-        find_fail_text = '{"html_attributions": [], "result": {"formatted_address": "nan", "geometry" : ["location" : "", "viewport": "nan"],"name": "nan", "place_id": "nan","types": ["Query Not Found"]}}'
+        find_fail_text = '{"html_attributions": [], "result": {"formatted_address": "nan", "geometry" : {"location" : "", "viewport": "nan"},"name": "nan", "place_id": "nan","types": ["Query Not Found"]}}'
         if location:
             candidates = self.place_id_by_coordinate(query,location,self.search_radius)
         else:
@@ -134,7 +134,7 @@ class GooglePlaces(object):
         return reviews
     
     def retrieve_reviews_multi(self, query, location=()):
-        find_fail_text = '{"html_attributions": [], "result": {"formatted_address": "nan", "geometry" : ["location" : "", "viewport": "nan"],"name": "nan", "place_id": "nan","types": ["Query Not Found"]}}'
+        find_fail_text = '{"html_attributions": [], "result": {"formatted_address": "nan", "geometry" : {"location" : "", "viewport": "nan"},"name": "nan", "place_id": "nan","types": ["Query Not Found"]}}'
         if isinstance(query,list):
             candidates = self.places_by_coordinate(query[0],location,self.search_radius)
         else:
