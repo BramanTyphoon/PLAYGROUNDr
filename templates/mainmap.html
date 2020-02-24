@@ -109,12 +109,12 @@
         console.log('You clicked on map center: ' + this.map.center)
         this.map.setCenter(event.latLng);
         
-         //Remove markers from the map
+        // If the event has a placeId, use it.
+        if (event.placeId) {
+          //Remove markers from the map
           for (i=0; i < this.markers.length; i++) {
               this.markers[i].setMap(null);
           }
-        // If the event has a placeId, use it.
-        if (event.placeId) {
           console.log('You clicked on place:' + event.placeId);
 
           // Calling e.stop() on the event prevents the default info window from
@@ -156,7 +156,7 @@
           for (i=0; i < amens.length; i++){
             searchOptions.push(amens[i].checked)
           }          
-          this.markers.length = 0;
+          
           //Add a marker to the search location
           this.markers.push(new google.maps.Marker({position:event.latLng,map:this.map,label:""}));
           $.ajax({
@@ -166,9 +166,18 @@
                   lat : event.latLng.lat,
                   lon : event.latLng.lng,
                   search : JSON.stringify(searchOptions)},
-                  custom : this
+                  custom : this,
+                  searchLoc : event.latLng
               }).done(function(response) {
-                  //Take the server response and parse it
+                  //Remove markers from the map
+                  for (i=0; i < this.custom.markers.length; i++) {
+                      this.custom.markers[i].setMap(null);
+                  }
+                  this.custom.markers.length = 0;
+                  //Add marker at the search location
+                  this.custom.markers.push(new google.maps.Marker({position:this.searchLoc,map:this.custom.map,label:""}));
+                  
+                  //Take the server response and parse it, adding markers to map
                   $('#results').empty()
                   $('#results').append(listResults(response['results'],this.custom));
             });
