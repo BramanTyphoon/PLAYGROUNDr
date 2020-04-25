@@ -9,7 +9,7 @@ Created on Wed Jan 22 17:22:45 2020
 from flask import render_template, request, Flask, jsonify
 from GooglePlaces import GooglePlaces
 from geopy.distance import geodesic 
-#from util import process_review
+from util import process_review
 from flask_bootstrap import Bootstrap
 import numpy as np
 import json
