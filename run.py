@@ -15,6 +15,9 @@ import numpy as np
 import json
 
 # Variables used within the other methods
+# To keep Google API_KEY secret, I've written two ways to enter the API KEY. 
+# Either require manual entry when running the server, or have a text file
+# containing just the key stored in this file's directory's parent directory
 #API_KEY = input("Provide a Google Places/Maps API KEY:")
 with open('../API_KEY.txt','r') as fil:
     API_KEY = fil.readline()
