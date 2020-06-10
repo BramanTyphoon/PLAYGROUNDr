@@ -1,9 +1,14 @@
 #!/home/bramante/anaconda3/envs/insight/bin/ python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jan 22 17:22:45 2020
+...........................PLAYGROUNDr Flask Web App...........................
+Author: James Bramante
+Date: January 22, 2020
 
-@author: bramante
+This script creates a Flask application and defines the routes that process
+requests from the web frontend. It
+
+This script requires all of the PLAYGROUNDr web app modules, Flask, and geopy.
 """
 
 from flask import render_template, request, Flask, jsonify
@@ -38,6 +43,11 @@ Bootstrap(application)
 @application.route('/')
 @application.route('/index',methods=['POST'])
 def index():
+    """Renders the front-end mainmap page template
+    
+    Looks for optional 'location_field' input from the user and uses that to
+    initialize the center of the Google map on the mainmap page.
+    """
     if request.form:
         candidate = gp.place_coordinate_by_textquery(request.form['location_field'])
         if candidate['candidates']:
@@ -51,6 +61,18 @@ def index():
 # This route gets called when a user has clicked on a location with a placeid
 @application.route('/singlepark', methods=['POST'])
 def single_park_amenities():
+    """Requests and processes reviews for a location selected on the main map
+    
+    'POST' input
+    ------------
+    'placeid' : str
+        A Google Places PlaceID
+    
+    Returns
+    -------
+    json str
+        A jsonified dict of location information, including predicted amenities
+    """
     placeid = request.form['placeid']
     
     # Extract details with Google API
@@ -62,6 +84,23 @@ def single_park_amenities():
     
 @application.route('/multipark', methods=['POST'])
 def multi_park_amenities():
+    """Requests and processes reviews for locations near target lat/lon
+    
+    'POST' input
+    ------------
+    'lat' : str
+        Latitude of target location
+    'lon' : str
+        Longitude of target location
+    'search' : str
+        Jsonified list of boolean values for amenities to search for
+
+    Returns
+    -------
+    json str
+        A jsonified dict of location information, including predicted amenities
+        for up to maximum number of locations within proximity
+    """
     lat = float(request.form['lat'])
     lon = float(request.form['lon'])
     options = np.array([1 if x else 0 for x in json.loads(request.form['search'])])

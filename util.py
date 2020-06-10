@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Jan 24 14:43:52 2020
+......................Utilities for the PLAYGROUNDr app.......................
+Author: James Bramante
+Date: January 24, 2020
 
-@author: bramante
+This script can be imported as a module and contains utility methods for the 
+PLAYGROUNDr web app to process Google Reviews and implement NLP models
+
+This script requires gensim, nltk, numpy, pandas, and pickle for pickled models
 """
-
-#......................Utilities for the PLAYGROUNDr app.......................
-# Author: James Bramante
-# Date: January 24, 2020
-
 #import nltk
 #nltk.download('stopwords')
 from gensim.models import FastText
@@ -43,6 +43,7 @@ vectorizer_file_name = "data/TFIDFmodel.mod"
 # to label as park
 place_types = ['playground','pool', 'dog park', 'dog run', 'rink', 'recreation centre', 'community centre','recreation center', 'community center', 'sports field']
 
+# Load the string encoder model and amenity classification model
 with open(model_file_name,'rb') as fp:
     clf = pickle.load(fp)
     
@@ -50,8 +51,24 @@ with open(vectorizer_file_name,'rb') as fp:
     tfidf_model = pickle.load(fp)
 
 
-# Method for preparing text for modeling
 def process_review(review):
+    """Apply a classification model to review text to predict amenities
+    
+
+    Parameters
+    ----------
+    review : dict
+        JSON dict output from Google Places request for reviews. The first 
+        name should be 'results', and its value should contain all other info
+
+    Returns
+    -------
+    out_dict : dict
+        Dictionary containing all of the location information from the Google
+        Places request, plus predictions for which amenities are at that
+        location
+        
+    """
     
     # Set default outputs
     out_name = review['name']
@@ -101,6 +118,19 @@ def process_review(review):
     return out_dict
 
 def text_prepare(text):
+    """Prepares (formats, lemmatizes) text input prior to vectorization
+
+    Parameters
+    ----------
+    text : str
+        A review document (a string containing one or more reviews)
+
+    Returns
+    -------
+    text : str
+    
+    """
+    
     text = text.lower()
     text = re.sub(REPLACE_BY_SPACE_RE,' ',text)# replace REPLACE_BY_SPACE_RE symbols by space in text
     text = re.sub(BAD_SYMBOLS_RE, '',text)# delete symbols which are in BAD_SYMBOLS_RE from text
@@ -109,6 +139,22 @@ def text_prepare(text):
     return text
 
 def bag_of_words_vectorize(words,word2index):
+    """
+    Vectorizes text input using a bag of words model
+
+    Parameters
+    ----------
+    words : str
+        A review document (a string containing one or more reviews)
+    word2index : dict
+        Vector of word : index pairs for every word in a vocabulary
+
+    Returns
+    -------
+    vect : numpy.array
+        An array containing counts for every word in a vocabulary
+
+    """
     vect = np.zeros([1,len(word2index.keys())])
     for word in words.split():
         if word in word2index.keys():
@@ -116,9 +162,40 @@ def bag_of_words_vectorize(words,word2index):
     return vect
 
 def tfidf_vectorize(words,tfidf):
+    """
+    Vectorizes text using a Term Frequency-Inverse Document Frequency model
+
+    Parameters
+    ----------
+    words : str
+        A review document (a string containing one or more reviews)
+    tfidf : sklearn.TfidfVectorizer
+        A vectorizer that takes a list of strings as input documents
+
+    Returns
+    -------
+    numpy.array
+        An array containing TF-IDF values for the input review document
+
+    """
     return tfidf.transform([words])
 
 def build_fasttext_model(full_database_file):
+    """
+    Trains a word2vec model from scratch
+
+    Parameters
+    ----------
+    full_database_file : pandas.DataFrame
+        Precisely formatted Pandas database containing a large number of 
+        reviews
+
+    Returns
+    -------
+    gensim.models.Word2Vec
+        A word2vec vectorizer
+
+    """
     review_database = pd.read_json(full_database_file,orient='records',lines='True')
     X_vector_train = []
     for review in list(review_database['reviews']):
